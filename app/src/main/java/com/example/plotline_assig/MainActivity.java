@@ -13,24 +13,22 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.google.android.material.color.DynamicColors;
+import com.google.android.material.textfield.TextInputEditText;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -38,21 +36,17 @@ import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Date;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class MainActivity extends AppCompatActivity {
 
     static {
         if(OpenCVLoader.initDebug()){
-            Log.d("OpenCv sai","Loaded");
+            Log.d("OpenCv","Loaded");
         }else {
-            Log.e("OpenCv sai","Error");
+            Log.e("OpenCv","Error");
         }
     }
     String OriginalUri = "";
@@ -62,10 +56,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        DynamicColors.applyToActivitiesIfAvailable(getApplication());
 
-        EditText url = findViewById(R.id.url);
+        TextInputEditText url = findViewById(R.id.url);
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Loading...");
+
 
         findViewById(R.id.get_url).setOnClickListener(view -> {
             if(url.getText().toString().trim().isEmpty()){
@@ -92,9 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.results).setOnClickListener(view -> startActivity(new Intent(this,ResultActivity.class)));
 
-        findViewById(R.id.select).setOnClickListener(view -> {
-            startActivityForResult(new Intent(Intent.ACTION_PICK),0);
-        });
+        findViewById(R.id.select).setOnClickListener(view -> startActivityForResult(new Intent(Intent.ACTION_PICK),0));
 
 
         findViewById(R.id.open_cam).setOnClickListener(view -> {
@@ -117,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap bitmap = null;
                 if(requestCode == 0) {
                     try {
+                        assert data != null;
                         Uri imageUri = data.getData();
                         bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
                     } catch (IOException e) {
@@ -124,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 if(requestCode == 1){
+                    assert data != null;
                     bitmap = (Bitmap) data.getExtras().get("data");
                 }
                 saveImageToGallery(bitmap,"Original");
@@ -161,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
     private void saveImageToGallery(Bitmap bitmap,String type){
 
         OutputStream fos;
-        String filename = String.valueOf(android.text.format.DateFormat.format("yyyy-MM-dd hh:mm:ss a", new Date()));;
+        String filename = String.valueOf(android.text.format.DateFormat.format("yyyy-MM-dd hh:mm:ss a", new Date()));
         try{
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
                 ContentResolver resolver = getContentResolver();
